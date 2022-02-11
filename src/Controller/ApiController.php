@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use App\Entity\Tweet;
 use App\Entity\User;
+use Symfony\Component\Routing\Generator\UrlGenerator;
 
 class ApiController extends AbstractController
 {
@@ -55,15 +56,43 @@ class ApiController extends AbstractController
     }
     // Creamos un objeto genérico y lo rellenamos con la información.
     $result = new \stdClass();
-    $user->id = $user->getId();
-    $user->name = $user->getName();
-    $user->username = $user->getUsername();
-    // Para enlazar al usuario, añadimos el enlace API para consultar su información.
-    $result->user = $this->generateUrl('api_get_user', [
-      'id' => $user->getUser()->getId(),
-    ], UrlGeneratorInterface::ABSOLUTE_URL);
+    $result->id = $user->getId();
+    $result->name = $user->getName();
+    $result->username = $user->getUsername();
+    // Para enlazar al tweet, añadimos el enlace API para consultar su información.
+    $result->tweets = array();
+    foreach ($user->getTweets() as $tweet) {
+      $result->tweets[] = $this->generateUrl('api_get_tweet', [
+        'id' => $tweet->getId(),
+      ], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+    // $result->tweets = $this->generateUrl('api_get_tweets', [
+    //   'id' => $user->getTweets()->getId(),
+    // ], UrlGeneratorInterface::ABSOLUTE_URL);
     // Al utilizar JsonResponse, la conversión del objeto $result a JSON se hace de forma automática.
-     return new JsonResponse();
+     return new JsonResponse($result);
+  }
+
+  function getTweetfonyUsers()
+  {
+    $entityManager = $this->getDoctrine()->getManager();
+    $users = $entityManager->getRepository(User::class)->findAll();
+    $result = array();
+    foreach ($users as $user){
+      $result[] = $this->generateUrl('api_get_user', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+    return new JsonResponse($result);
+
+  }
+
+  function getTweets() {
+    $entityManager = $this->getDoctrine()->getManager();
+    $tweets = $entityManager->getRepository(Tweet::class)->findAll();
+    $result = array();
+    foreach ($tweets as $tweet) {
+      $result[] = $this->generateUrl('api_get_tweets', ['id' => $tweet->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+    return new JsonResponse($result);
   }
 
   function index() {
@@ -134,4 +163,21 @@ class ApiController extends AbstractController
     }
     return new JsonResponse($result);
   }
+
+  function deleteTweet($id){
+    $entityManager = $this->getDoctrine()->getManager();
+    $tweet = $entityManager->getRepository(Tweet::class)->find($id);
+    if ($tweet == null) {
+      return new JsonResponse([
+        'error' => 'Tweet not found'
+      ], 404);
+    }
+    $entityManager->remove($tweet);
+    $entityManager->flush();
+
+    return new JsonResponse(null, 204);
+
+  }
+
+
 }

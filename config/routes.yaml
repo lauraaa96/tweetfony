@@ -11,9 +11,19 @@ api_get_tweet:
   controller: App\Controller\ApiController::getTweet
   methods: ["GET"]
 
+api_get_tweets:
+  path: /api/tweets
+  controller: App\Controller\ApiController::getTweets
+  methods: ["GET"]
+
 api_get_user:
   path: /api/users/{id}
   controller: App\Controller\ApiController::getTweetfonyUser
+  methods: ["GET"]
+
+api_get_users:
+  path: /api/users
+  controller: App\Controller\ApiController::getTweetfonyUsers
   methods: ["GET"]
 
 api_index:
@@ -30,3 +40,8 @@ api_put_user:
   path: /api/users/{id}
   controller: App\Controller\ApiController::putTweetfonyUser
   methods: ["PUT"]
+
+api_delete_tweet:
+  path: /api/tweets/{id}
+  controller: App\Controller\ApiController::deleteTweet
+  methods: ["DELETE"]
