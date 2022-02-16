@@ -43,6 +43,7 @@ class ApiController extends AbstractController
     return new JsonResponse($result);
   }
 
+  //6.2.1 Implementación del método getTweetfonyUser($id)
   function getTweetfonyUser($id)
   {
     // Obtenemos el usuario
@@ -66,45 +67,29 @@ class ApiController extends AbstractController
         'id' => $tweet->getId(),
       ], UrlGeneratorInterface::ABSOLUTE_URL);
     }
-    // $result->tweets = $this->generateUrl('api_get_tweets', [
-    //   'id' => $user->getTweets()->getId(),
-    // ], UrlGeneratorInterface::ABSOLUTE_URL);
     // Al utilizar JsonResponse, la conversión del objeto $result a JSON se hace de forma automática.
-     return new JsonResponse($result);
+    return new JsonResponse($result);
   }
 
-  function getTweetfonyUsers()
+  function index()
   {
-    $entityManager = $this->getDoctrine()->getManager();
-    $users = $entityManager->getRepository(User::class)->findAll();
     $result = array();
-    foreach ($users as $user){
-      $result[] = $this->generateUrl('api_get_user', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-    }
-    return new JsonResponse($result);
-
-  }
-
-  function getTweets() {
-    $entityManager = $this->getDoctrine()->getManager();
-    $tweets = $entityManager->getRepository(Tweet::class)->findAll();
-    $result = array();
-    foreach ($tweets as $tweet) {
-      $result[] = $this->generateUrl('api_get_tweets', ['id' => $tweet->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-    }
+    $result['users'] = $this->generateUrl(
+      'api_get_users',
+      array(),
+      UrlGeneratorInterface::ABSOLUTE_URL
+    );
+    $result['tweets'] = $this->generateUrl(
+      'api_get_tweets',
+      array(),
+      UrlGeneratorInterface::ABSOLUTE_URL
+    );
     return new JsonResponse($result);
   }
 
-  function index() {
-    $result = array();
-    $result['users'] = $this->generateUrl('api_get_users',array(),
-                                          UrlGeneratorInterface::ABSOLUTE_URL);
-    $result['tweets'] = $this->generateUrl('api_get_tweets',array(),
-                                          UrlGeneratorInterface::ABSOLUTE_URL);
-    return new JsonResponse($result);
-  }
 
-  function postTweetfonyUser(Request $request) {
+  function postTweetfonyUser(Request $request)
+  {
     $entityManager = $this->getDoctrine()->getManager();
     $user = $entityManager->getRepository(User::class)->findOneBy(['userName' => $request->request->get("userName")]);
     if ($user) {
@@ -126,7 +111,34 @@ class ApiController extends AbstractController
     return new JsonResponse($result, 201);
   }
 
-  function putTweetfonyUser(Request $request, $id) {
+
+  //6.2.2 Implementación del método postTweet(Request $request) 404
+  function postTweet(Request $request)
+  {
+    $entityManager = $this->getDoctrine()->getManager();
+    $user = $entityManager->getRepository(User::class)->find($request->request->get("id"));
+    if ($user == null) {
+      return new JsonResponse([
+        'error' => 'User not found'
+      ], 409);
+    }
+    $tweet = new Tweet();
+    $tweet->setText($request->request->get("text"));
+    $tweet->setDate(new \DateTime());
+    $tweet->setUser($request->request->get("user"));
+    $entityManager->persist($tweet);
+    $entityManager->flush();
+    $result = new \stdClass();
+    $result->id = $tweet->getId();
+    $result->text = $tweet->getText();
+    $result->date = $tweet->getDate();
+    $result->user = $this->generateUrl('api_get_user', ['id' => $user->getId()]);
+    return new JsonResponse($result, 201);
+  }
+
+
+  function putTweetfonyUser(Request $request, $id)
+  {
     $entityManager = $this->getDoctrine()->getManager();
     $user = $entityManager->getRepository(User::class)->find($id);
     if ($user == null) {
@@ -135,12 +147,12 @@ class ApiController extends AbstractController
       ], 404);
     }
     if ($user->getUserName() != $request->request->get("userName")) {
-        $user2 = $entityManager->getRepository(User::class)->findOneBy(['userName' => $request->request->get("userName")]);
-        if ($user2) {
+      $user2 = $entityManager->getRepository(User::class)->findOneBy(['userName' => $request->request->get("userName")]);
+      if ($user2) {
         return new JsonResponse([
-            'error' => 'UserName already in use'
+          'error' => 'UserName already in use'
         ], 409);
-        }
+      }
     }
     $user->setName($request->request->get("name"));
     $user->setUserName($request->request->get("userName"));
@@ -164,7 +176,10 @@ class ApiController extends AbstractController
     return new JsonResponse($result);
   }
 
-  function deleteTweet($id){
+
+  //6.2.3 Implementación del método putTweet(Request $request, $id)
+  function putTweet(Request $request, $id)
+  {
     $entityManager = $this->getDoctrine()->getManager();
     $tweet = $entityManager->getRepository(Tweet::class)->find($id);
     if ($tweet == null) {
@@ -172,12 +187,79 @@ class ApiController extends AbstractController
         'error' => 'Tweet not found'
       ], 404);
     }
-    $entityManager->remove($tweet);
+    $tweet->setText($request->request->get("text"));
+    $tweet->setDate(new \DateTime());
     $entityManager->flush();
-
-    return new JsonResponse(null, 204);
-
+    $result = new \stdClass();
+    $result->id = $tweet->getId();
+    $result->text = $tweet->getText();
+    $result->date = $tweet->getDate();
+    $result->user = $this->generateUrl(
+      'api_get_user',
+      ['id' => $tweet->getUser()->getId(),],
+      UrlGeneratorInterface::ABSOLUTE_URL
+    );
+    $result->likes = array();
+    foreach ($tweet->getLikes() as $user) {
+      $result->likes[] = $this->generateUrl('api_get_user', [
+        'id' => $user->getId(),
+      ], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+    return new JsonResponse($result);
   }
 
 
+//6.2.4 Implementación del método deteleTweetfonyUser($id)
+function deteleTweetfonyUser($id)
+{
+  $entityManager = $this->getDoctrine()->getManager();
+  $user = $entityManager->getRepository(User::class)->find($id);
+  if ($user == null) {
+    return new JsonResponse([
+      'error' => 'User not found'
+    ], 404);
+  }
+  $entityManager->remove($user);
+  $entityManager->flush();
+
+  return new JsonResponse(null, 204);
+}
+
+//6.2.4 Implementación del método deleteTweet($id)
+function deleteTweet($id)
+{
+  $entityManager = $this->getDoctrine()->getManager();
+  $tweet = $entityManager->getRepository(Tweet::class)->find($id);
+  if ($tweet == null) {
+    return new JsonResponse([
+      'error' => 'Tweet not found'
+    ], 404);
+  }
+  $entityManager->remove($tweet);
+  $entityManager->flush();
+
+  return new JsonResponse(null, 204);
+}
+
+  function getTweetfonyUsers()
+  {
+    $entityManager = $this->getDoctrine()->getManager();
+    $users = $entityManager->getRepository(User::class)->findAll();
+    $result = array();
+    foreach ($users as $user) {
+      $result[] = $this->generateUrl('api_get_user', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+    return new JsonResponse($result);
+  }
+
+  function getTweets()
+  {
+    $entityManager = $this->getDoctrine()->getManager();
+    $tweets = $entityManager->getRepository(Tweet::class)->findAll();
+    $result = array();
+    foreach ($tweets as $tweet) {
+      $result[] = $this->generateUrl('api_get_tweets', ['id' => $tweet->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+    return new JsonResponse($result);
+  }
 }

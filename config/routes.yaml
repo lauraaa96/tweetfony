@@ -11,16 +11,18 @@ api_get_tweet:
   controller: App\Controller\ApiController::getTweet
   methods: ["GET"]
 
-api_get_tweets:
-  path: /api/tweets
-  controller: App\Controller\ApiController::getTweets
-  methods: ["GET"]
-
 api_get_user:
   path: /api/users/{id}
   controller: App\Controller\ApiController::getTweetfonyUser
   methods: ["GET"]
 
+#6.2.1 Creación de la ruta api_get_tweets --
+api_get_tweets:
+  path: /api/tweets
+  controller: App\Controller\ApiController::getTweets
+  methods: ["GET"]
+
+#6.2.1 Creación de la ruta api_get_users --
 api_get_users:
   path: /api/users
   controller: App\Controller\ApiController::getTweetfonyUsers
@@ -31,16 +33,37 @@ api_index:
   controller: App\Controller\ApiController::index
   methods: ["GET"]
 
+#!
 api_post_user:
   path: /api/users
   controller: App\Controller\ApiController::postTweetfonyUser
   methods: ["POST"]
 
+#6.2.2 Creación de la ruta api_post_tweet !
+api_post_tweet:
+  path: /api/tweets
+  controller: App\Controller\ApiController::postTweet
+  methods: ["POST"]
+
+#!
 api_put_user:
   path: /api/users/{id}
   controller: App\Controller\ApiController::putTweetfonyUser
   methods: ["PUT"]
 
+#6.2.3 Creación de la ruta api_put_tweet !
+api_put_tweet:
+  path: /api/tweets/{id}
+  controller: App\Controller\ApiController::putTweet
+  methods: ["PUT"]
+
+#6.2.4 Creación de la ruta api_delete_user --
+api_delete_user:
+  path: /api/users/{id}
+  controller: App\Controller\ApiController::deteleTweetfonyUser
+  methods: ["DELETE"]
+
+#6.2.4 Creación de la ruta api_delete_tweet --
 api_delete_tweet:
   path: /api/tweets/{id}
   controller: App\Controller\ApiController::deleteTweet
