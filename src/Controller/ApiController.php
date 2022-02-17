@@ -125,14 +125,14 @@ class ApiController extends AbstractController
     $tweet = new Tweet();
     $tweet->setText($request->request->get("text"));
     $tweet->setDate(new \DateTime());
-    $tweet->setUser($request->request->get("user"));
+    $tweet->setUser($user);
     $entityManager->persist($tweet);
     $entityManager->flush();
     $result = new \stdClass();
     $result->id = $tweet->getId();
     $result->text = $tweet->getText();
     $result->date = $tweet->getDate();
-    $result->user = $this->generateUrl('api_get_user', ['id' => $user->getId()]);
+    $result->user = $this->generateUrl('api_get_user', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
     return new JsonResponse($result, 201);
   }
 
