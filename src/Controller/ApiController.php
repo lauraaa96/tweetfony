@@ -258,7 +258,7 @@ function deleteTweet($id)
     $tweets = $entityManager->getRepository(Tweet::class)->findAll();
     $result = array();
     foreach ($tweets as $tweet) {
-      $result[] = $this->generateUrl('api_get_tweets', ['id' => $tweet->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+      $result[] = $this->generateUrl('api_get_tweet', ['id' => $tweet->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
     }
     return new JsonResponse($result);
   }
