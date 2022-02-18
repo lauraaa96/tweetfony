@@ -67,6 +67,13 @@ class ApiController extends AbstractController
         'id' => $tweet->getId(),
       ], UrlGeneratorInterface::ABSOLUTE_URL);
     }
+    // Para enlazar los likes, añadimos el enlace API para consultar su información.
+    $result->likes = array();
+    foreach ($user->getLikes() as $tweet) {
+      $result->likes[] = $this->generateUrl('api_get_tweet', [
+        'id' => $tweet->getId(),
+      ], UrlGeneratorInterface::ABSOLUTE_URL);
+    }
     // Al utilizar JsonResponse, la conversión del objeto $result a JSON se hace de forma automática.
     return new JsonResponse($result);
   }
